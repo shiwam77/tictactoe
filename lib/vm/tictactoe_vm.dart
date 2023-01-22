@@ -1,17 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:tictactoe/widget.dart';
+import 'package:tictactoe/constant/app_string.dart';
+import 'package:tictactoe/statemanagement/view_model.dart';
 
-import 'constant/app_colors.dart';
-import 'constant/app_string.dart';
-
-class TicTacView extends StatefulWidget {
-  const TicTacView({Key? key}) : super(key: key);
-
-  @override
-  State<TicTacView> createState() => _TicTacViewState();
-}
-
-class _TicTacViewState extends State<TicTacView> {
+class TicTacToeVm extends ViewModel {
 
   bool oTurn = true;
   bool xTurn = false;
@@ -31,74 +22,8 @@ class _TicTacViewState extends State<TicTacView> {
     super.initState();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                 PlayerContainer(turn: oTurn, score: oScore, playerName: AppString.playerO),
-                 PlayerContainer(turn: xTurn, score: xScore, playerName: AppString.playerX),
-                 PlayerContainer(turn: yTurn, score: yScore, playerName: AppString.playerY)
-                ],
-              ),
-            ),
-            Expanded(
-              flex: 4,
-              child: GridView.builder(
-                  itemCount: gridValue.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 4),
-                  itemBuilder: (BuildContext context, int index) {
-                    return GestureDetector(
-                      onTap: () {
-                        if(winner == null){
-                          onGridClick(index);
-                        }
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black)),
-                        child: Center(
-                          child: Text(
-                            gridValue[index],
-                            style: TextStyle(color: Colors.black, fontSize: 35),
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-            ),
-            Expanded(
-                child: Column(
-                  children: <Widget>[
-                   winner != null ?  Text(
-                        "Winner is Player $winner",
-                        style: TextStyle(fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textColor)) : const SizedBox(),
-                    const SizedBox(height: 20,),
-                    ElevatedButton(
-                      onPressed: (){
-                        clearBoard();
-                      },
-                      child: Text(AppString.clearScoreBoard,style: TextStyle(color:  Colors.black,)),
-                    ),
-                  ],
-                ))
-          ],
-        ),
-      ),
-    );
-  }
-
   void onGridClick(int index) {
-    setState(() {
+
       if (oTurn && !xTurn && !yTurn  && gridValue[index] == '') {
         togglePlayer(index,oTurn: false,xTurn: true,yTurn: false, value: '0');
       } else if (!oTurn && xTurn && !yTurn && gridValue[index] == '') {
@@ -107,7 +32,7 @@ class _TicTacViewState extends State<TicTacView> {
         togglePlayer(index,oTurn: true,xTurn: false,yTurn: false, value: 'Y');
       }
       _checkWinner();
-    });
+   notifyListeners();
   }
 
   void _checkWinner() {
@@ -141,9 +66,9 @@ class _TicTacViewState extends State<TicTacView> {
     checkDiagonalByThree(7);
     checkDiagonalByFive(1);
     checkDiagonalByFive(4);
-     if (filledGrid == 16) {
-          _showDrawDialog();
-        }
+    if (filledGrid == 16) {
+      _showDrawDialog();
+    }
   }
 
   void togglePlayer(int index,{required bool oTurn,required bool xTurn,required bool yTurn,required String value}){
@@ -175,7 +100,7 @@ class _TicTacViewState extends State<TicTacView> {
         gridValue[firstIndex] == gridValue[thirdIndex] &&
         gridValue[firstIndex] != '') {
       winner = gridValue[firstIndex];
-
+      showWinDialog(gridValue[firstIndex]);
     }
   }
 
@@ -190,7 +115,6 @@ class _TicTacViewState extends State<TicTacView> {
               ElevatedButton(
                 child: const Text(AppString.playAgain),
                 onPressed: () {
-                  clearBoard();
                   Navigator.of(context).pop();
                 },
               )
@@ -200,7 +124,6 @@ class _TicTacViewState extends State<TicTacView> {
   }
 
   void clearBoard() {
-    setState(() {
       xScore = 0;
       oScore = 0;
       yScore = 0;
@@ -211,7 +134,36 @@ class _TicTacViewState extends State<TicTacView> {
       for (int i = 0; i < gridValue.length; i++) {
         gridValue[i] = '';
       }
-    });
-    filledGrid = 0;
+      filledGrid = 0;
+      notifyListeners();
   }
+
+  void showWinDialog(String winner) {
+
+    if (winner == '0') {
+      oScore++;
+    } else if (winner == 'X') {
+      xScore++;
+    }else if(winner == 'Y'){
+      yScore++;
+    }
+    showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("\" " + winner + " \" is Winner!!!"),
+            actions: [
+              ElevatedButton(
+                child: const Text(AppString.playAgain),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        });
+
+  }
+
 }
