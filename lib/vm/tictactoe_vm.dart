@@ -100,7 +100,7 @@ class TicTacToeVm extends ViewModel {
         gridValue[firstIndex] == gridValue[thirdIndex] &&
         gridValue[firstIndex] != '') {
       winner = gridValue[firstIndex];
-
+      showWinDialog(gridValue[firstIndex]);
     }
   }
 
@@ -115,7 +115,6 @@ class TicTacToeVm extends ViewModel {
               ElevatedButton(
                 child: const Text(AppString.playAgain),
                 onPressed: () {
-                  clearBoard();
                   Navigator.of(context).pop();
                 },
               )
@@ -137,6 +136,34 @@ class TicTacToeVm extends ViewModel {
       }
       filledGrid = 0;
       notifyListeners();
+  }
+
+  void showWinDialog(String winner) {
+
+    if (winner == '0') {
+      oScore++;
+    } else if (winner == 'X') {
+      xScore++;
+    }else if(winner == 'Y'){
+      yScore++;
+    }
+    showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("\" " + winner + " \" is Winner!!!"),
+            actions: [
+              ElevatedButton(
+                child: const Text(AppString.playAgain),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        });
+
   }
 
 }
